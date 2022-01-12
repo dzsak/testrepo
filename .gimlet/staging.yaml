@@ -1,0 +1,15 @@
+app: testrepo
+env: staging
+namespace: default
+chart:
+  repository: https://chart.onechart.dev
+  name: onechart
+  version: 0.32.0
+values:  
+  image:
+    repository: ghcr.io/gimlet-io/gimletd
+    tag: latest
+    pullPolicy: Always
+  probe:
+    enabled: true
+    path: /
