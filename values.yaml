@@ -1,8 +1,0 @@
-image:
-  repository: ghcr.io/gimlet-io/gimletd
-  tag: latest
-  pullPolicy: Always
-containerPort: 8888
-probe:
-  enabled: true
-  path: /
