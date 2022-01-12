@@ -1,0 +1,81 @@
+---
+# Source: onechart/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: testrepo
+  namespace: default
+  labels:
+    helm.sh/chart: onechart-0.32.0
+    app.kubernetes.io/name: onechart
+    app.kubernetes.io/instance: testrepo
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+    
+  selector:
+    app.kubernetes.io/name: onechart
+    app.kubernetes.io/instance: testrepo
+---
+# Source: onechart/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: testrepo
+  namespace: default
+  labels:
+    helm.sh/chart: onechart-0.32.0
+    app.kubernetes.io/name: onechart
+    app.kubernetes.io/instance: testrepo
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: onechart
+      app.kubernetes.io/instance: testrepo
+  template:
+    metadata:
+      annotations:
+        checksum/config: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      labels:
+        app.kubernetes.io/name: onechart
+        app.kubernetes.io/instance: testrepo
+    spec:
+      securityContext:
+        fsGroup: 999
+      containers:
+        - name: testrepo
+          securityContext: &securityContext
+            {}
+          image: "ghcr.io/gimlet-io/gimletd:latest"
+          imagePullPolicy: Always
+          
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+            
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+              scheme: HTTP
+            failureThreshold: 3
+            initialDelaySeconds: 0
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 3
+          
+          resources:
+            limits:
+              cpu: 200m
+              memory: 200Mi
+            requests:
+              cpu: 200m
+              memory: 200Mi
