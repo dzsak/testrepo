@@ -1,0 +1,4 @@
+image:
+  repository: ghcr.io/gimlet-io/gimletd
+  tag: latest
+  pullPolicy: Always

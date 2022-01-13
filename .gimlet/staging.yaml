@@ -1,15 +1,15 @@
-app: testrepo
+app: frontend
 env: staging
 namespace: default
+deploy:
+  branch: main
+  event: push
 chart:
   repository: https://chart.onechart.dev
   name: onechart
   version: 0.32.0
-values:  
+values:
+  replicas: 2
   image:
-    repository: ghcr.io/gimlet-io/gimletd
-    tag: latest
-    pullPolicy: Always
-  probe:
-    enabled: true
-    path: /
+    repository: myapp
+    tag:  "{{ .GITHUB_SHA }}"
