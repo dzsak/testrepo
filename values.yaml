@@ -1,6 +1,8 @@
 image:
   repository: ghcr.io/gimlet-io/gimletd
   tag: latest
+  pullPolicy: Always
+containerPort: 8888
 probe:
   enabled: true
   path: /
@@ -11,6 +13,8 @@ volumes:
   - name: repo-cache
     path: /tmp/gimletd
     size: 5Gi
+vars:
+  PRINT_ADMIN_TOKEN: true
 ingress:
   annotations:
     kubernetes.io/ingress.class: nginx

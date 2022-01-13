@@ -1,4 +1,46 @@
 ---
+# Source: onechart/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gimletd
+  namespace: default
+  labels:
+    helm.sh/chart: onechart-0.32.0
+    app.kubernetes.io/name: onechart
+    app.kubernetes.io/instance: gimletd
+    app.kubernetes.io/managed-by: Helm
+data:
+  PRINT_ADMIN_TOKEN: "true"
+---
+# Source: onechart/templates/pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gimletd-data
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 1Gi
+---
+# Source: onechart/templates/pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gimletd-repo-cache
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 5Gi
+---
 # Source: onechart/templates/service.yaml
 apiVersion: v1
 kind: Service
@@ -13,7 +55,7 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-    - port: 80
+    - port: 8888
       targetPort: http
       protocol: TCP
       name: http
@@ -39,10 +81,12 @@ spec:
     matchLabels:
       app.kubernetes.io/name: onechart
       app.kubernetes.io/instance: gimletd
+  strategy:
+    type: Recreate
   template:
     metadata:
       annotations:
-        checksum/config: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        checksum/config: bf7b7385835912783df24bfc400f654fe24b03b7c385b0f31c69f59b7f9021a4
       labels:
         app.kubernetes.io/name: onechart
         app.kubernetes.io/instance: gimletd
@@ -56,12 +100,30 @@ spec:
           image: "ghcr.io/gimlet-io/gimletd:latest"
           imagePullPolicy: Always
           
+          envFrom: &envFrom
+            - configMapRef:
+                name: gimletd
           ports:
             - name: http
-              containerPort: 80
+              containerPort: 8888
               protocol: TCP
             
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8888
+              scheme: HTTP
+            failureThreshold: 3
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 3
           
+          volumeMounts: &volumeMounts
+            - name: data
+              mountPath: /var/lib/gimletd
+            - name: repo-cache
+              mountPath: /tmp/gimletd
           resources:
             limits:
               cpu: 200m
@@ -69,3 +131,42 @@ spec:
             requests:
               cpu: 200m
               memory: 200Mi
+      
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: gimletd-data
+        - name: repo-cache
+          persistentVolumeClaim:
+            claimName: gimletd-repo-cache
+---
+# Source: onechart/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gimletd
+  namespace: default
+  labels:
+    helm.sh/chart: onechart-0.32.0
+    app.kubernetes.io/name: onechart
+    app.kubernetes.io/instance: gimletd
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    kubernetes.io/ingress.class: nginx
+spec:
+  tls:
+    - hosts:
+        - "gimletd.mycompany.com"
+      secretName: tls-gimletd
+  rules:
+    - host: "gimletd.mycompany.com"
+      http:
+        paths:
+          - path: "/"
+            pathType: "Prefix"
+            backend:
+              service:
+                name: gimletd
+                port:
+                  number: 8888
