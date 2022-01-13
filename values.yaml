@@ -26,11 +26,53 @@ fileSecrets:
     secrets:
       deploy.key: |
         -----BEGIN OPENSSH PRIVATE KEY-----
-        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
+        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
         -----END OPENSSH PRIVATE KEY-----
 ingress:
   annotations:
