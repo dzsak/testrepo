@@ -1,0 +1,51 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp
+  namespace: gimlet-demo-staging
+  labels:
+    helm.sh/chart: onechart-0.31.0
+    app.kubernetes.io/name: onechart
+    app.kubernetes.io/instance: myapp
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    gimlet.io/git-sha: 071431009c8e9d6293d16f58b4d1a7176eac953b
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: onechart
+      app.kubernetes.io/instance: myapp
+  template:
+    metadata:
+      annotations:
+        checksum/config: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        gimlet.io/git-sha: 071431009c8e9d6293d16f58b4d1a7176eac953b
+        gimlet.io/git-repository: laszlocph/gimletd-test-repo
+      labels:
+        app.kubernetes.io/name: onechart
+        app.kubernetes.io/instance: myapp
+    spec:
+      securityContext:
+        fsGroup: 999
+      containers:
+        - name: myapp
+          securityContext: &securityContext
+            {}
+          image: "ghcr.io/podtato-head/podtatoserver:v0.1.1"
+          imagePullPolicy: IfNotPresent
+          
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+            
+          
+          resources:
+            limits:
+              cpu: 200m
+              memory: 200Mi
+            requests:
+              cpu: 200m
+              memory: 200Mi
