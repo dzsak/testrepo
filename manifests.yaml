@@ -1,4 +1,14 @@
 ---
+# Source: onechart/templates/fileSecret.yaml
+kind: Secret
+apiVersion: v1
+type: Opaque
+metadata:
+  name: gimletd-github-gitops-deploy-key
+  namespace: default
+data:
+  deploy.key: LS0tLS1CRUdJTiBPUEVOU1NIIFBSSVZBVEUgS0VZLS0tLS0KYjNCbGJuTnphQzFyWlhrdGRqRUFBQUFBQkc1dmJtVUFBQUFFYm05dVpRQUFBQUFBQUFBQkFBQUFNd0FBQUF0emMyZ3RaVwpReU5UVXhPUUFBQUNEbEFIU1lRbkJ1alpGdlFpZ09zUkg3a0RxdDhvT0w2aWh0bUVEYWhuT1poZ0FBQUpnY2grZTdISWZuCnV3QUFBQXR6YzJndFpXUXlOVFV4T1FBQUFDRGxBSFNZUW5CdWpaRnZRaWdPc1JIN2tEcXQ4b09MNmlodG1FRGFobk9aaGcKQUFBRUF0eHRqaHNuSWhHaGEyZk9MbGx2UkVWOWgwdW9LczYycnhlbmVFQVlWb0srVUFkSmhDY0c2TmtXOUNLQTZ4RWZ1UQpPcTN5ZzR2cUtHMllRTnFHYzVtR0FBQUFFM05wYzJGcllXUmhiVUJuYldGcGJDNWpiMjBCQWc9PQotLS0tLUVORCBPUEVOU1NIIFBSSVZBVEUgS0VZLS0tLS0K
+---
 # Source: onechart/templates/configmap.yaml
 apiVersion: v1
 kind: ConfigMap
@@ -11,6 +21,11 @@ metadata:
     app.kubernetes.io/instance: gimletd
     app.kubernetes.io/managed-by: Helm
 data:
+  GITOPS_REPO: "dzsak/testrepo"
+  GITOPS_REPO_DEPLOY_KEY_PATH: "/dzsak/deploy.key"
+  NOTIFICATIONS_DEFAULT_CHANNEL: "gimletd"
+  NOTIFICATIONS_PROVIDER: "slack"
+  NOTIFICATIONS_TOKEN: "xoxb-2948058755747-2948042287410-9Ah00vgRqiT93btdsM2XqBA9"
   PRINT_ADMIN_TOKEN: "true"
 ---
 # Source: onechart/templates/pvc.yaml
@@ -86,7 +101,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: bf7b7385835912783df24bfc400f654fe24b03b7c385b0f31c69f59b7f9021a4
+        checksum/config: eaa981b54f99888c995b32ebc56e17f13eb97c26311ab975d73c139c560767e1
       labels:
         app.kubernetes.io/name: onechart
         app.kubernetes.io/instance: gimletd
@@ -124,6 +139,9 @@ spec:
               mountPath: /var/lib/gimletd
             - name: repo-cache
               mountPath: /tmp/gimletd
+            - name: github-gitops-deploy-key
+              mountPath: /dzsak
+              readOnly: true
           resources:
             limits:
               cpu: 200m
@@ -139,6 +157,9 @@ spec:
         - name: repo-cache
           persistentVolumeClaim:
             claimName: gimletd-repo-cache
+        - name: github-gitops-deploy-key
+          secret:
+            secretName: gimletd-github-gitops-deploy-key
 ---
 # Source: onechart/templates/ingress.yaml
 apiVersion: networking.k8s.io/v1

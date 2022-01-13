@@ -15,6 +15,23 @@ volumes:
     size: 5Gi
 vars:
   PRINT_ADMIN_TOKEN: true
+  GITOPS_REPO: dzsak/testrepo
+  GITOPS_REPO_DEPLOY_KEY_PATH: /dzsak/deploy.key
+  NOTIFICATIONS_PROVIDER: slack
+  NOTIFICATIONS_TOKEN: xoxb-2948058755747-2948042287410-9Ah00vgRqiT93btdsM2XqBA9
+  NOTIFICATIONS_DEFAULT_CHANNEL: gimletd
+fileSecrets:
+  - name:  github-gitops-deploy-key
+    path: /dzsak
+    secrets:
+      deploy.key: |
+        -----BEGIN OPENSSH PRIVATE KEY-----
+        b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+        QyNTUxOQAAACDlAHSYQnBujZFvQigOsRH7kDqt8oOL6ihtmEDahnOZhgAAAJgch+e7HIfn
+        uwAAAAtzc2gtZWQyNTUxOQAAACDlAHSYQnBujZFvQigOsRH7kDqt8oOL6ihtmEDahnOZhg
+        AAAEAtxtjhsnIhGha2fOLllvREV9h0uoKs62rxeneEAYVoK+UAdJhCcG6NkW9CKA6xEfuQ
+        Oq3yg4vqKG2YQNqGc5mGAAAAE3Npc2FrYWRhbUBnbWFpbC5jb20BAg==
+        -----END OPENSSH PRIVATE KEY-----
 ingress:
   annotations:
     kubernetes.io/ingress.class: nginx
