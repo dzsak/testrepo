@@ -2,3 +2,10 @@ image:
   repository: ghcr.io/gimlet-io/gimletd
   tag: latest
   pullPolicy: Always
+volumes:
+  - name: data
+    path: /var/lib/gimletd
+    size: 1Gi
+  - name: repo-cache
+    path: /tmp/gimletd
+    size: 5Gi
