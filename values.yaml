@@ -1,7 +1,9 @@
 image:
   repository: ghcr.io/gimlet-io/gimletd
   tag: latest
-  pullPolicy: Always
+probe:
+  enabled: true
+  path: /
 volumes:
   - name: data
     path: /var/lib/gimletd
@@ -9,3 +11,9 @@ volumes:
   - name: repo-cache
     path: /tmp/gimletd
     size: 5Gi
+ingress:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt
+  host: gimletd.mycompany.com
+  tlsEnabled: true
